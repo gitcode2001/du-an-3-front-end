@@ -9,6 +9,10 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import PrivateRoute from './routes/PrivateRoute';
 import AdminAccountManager from "./pages/AdminAccountManager";
 import ProfilePage from "./pages/ProfilePage";
+import LaundryBookingComponent from "./booking/LaundryBookingComponent";
+import LaundryOrderHistory from "./booking/LaundryOrderHistory";
+import CategoryManagerComponent from "./category/CategoryManagerComponent";
+import AdminOrderList from "./booking/AdminOrderList";
 
 function App() {
     return (
@@ -21,7 +25,10 @@ function App() {
                 <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
                 <Route path="/account-manager" element={<AdminAccountManager />} />
                 <Route path="/profile" element={<ProfilePage/>}/>
-
+                <Route path="/booking" element={<LaundryBookingComponent/>}/>
+                <Route path="/history-booking" element={<LaundryOrderHistory/>}/>
+                <Route path="/categories" element={<CategoryManagerComponent/>}/>
+                <Route path="/order-list" element={<AdminOrderList/>}/>
             </Routes>
         </Router>
     );

@@ -1,18 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Box, Typography, Paper, Divider, Avatar, Grid
+    Box, Typography, Paper, Divider, Avatar, Grid, Button,
+    Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem
 } from '@mui/material';
-import { getUserById } from '../services/UserService';
+import { getUserById, updateUser } from '../services/UserService';
+import { uploadImageToCloudinary } from '../services/CloudinaryService';
 import PersonIcon from '@mui/icons-material/Person';
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [form, setForm] = useState({});
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [preview, setPreview] = useState('');
 
     useEffect(() => {
         const userId = localStorage.getItem('userId');
         if (userId) {
             getUserById(userId)
-                .then(res => setUser(res.data))
+                .then(res => {
+                    setUser(res.data);
+                    setForm({
+                        ...res.data,
+                        account: res.data.account || {}
+                    });
+                    setPreview(res.data.avatar || '');
+                })
                 .catch(console.error);
         }
     }, []);
@@ -23,6 +36,47 @@ const ProfilePage = () => {
             case 'STAFF': return 'Nhân viên';
             case 'USER': return 'Khách hàng';
             default: return role;
+        }
+    };
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setAvatarFile(file);
+        if (file) {
+            setPreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSubmit = async () => {
+        try {
+            let avatarUrl = form.avatar || '';
+            if (avatarFile) {
+                avatarUrl = await uploadImageToCloudinary(avatarFile);
+            }
+
+            const updatedRole = user?.account?.role?.name === 'ADMIN'
+                ? form.account.role
+                : user?.account?.role;
+
+            const updatedUser = {
+                ...form,
+                avatar: avatarUrl,
+                gender: form.gender === 'true' || form.gender === true,
+                account: {
+                    ...form.account,
+                    role: updatedRole
+                }
+            };
+
+            await updateUser(user.id, updatedUser);
+            setEditOpen(false);
+            setUser(updatedUser);
+        } catch (err) {
+            console.error("❌ Lỗi cập nhật:", err);
         }
     };
 
@@ -44,6 +98,9 @@ const ProfilePage = () => {
                     <Typography color="text.secondary">
                         {getRoleInVietnamese(user.role)}
                     </Typography>
+                    <Button variant="outlined" sx={{ mt: 1 }} onClick={() => setEditOpen(true)}>
+                        Chỉnh sửa
+                    </Button>
                 </Box>
 
                 <Divider sx={{ my: 2 }} />
@@ -69,6 +126,57 @@ const ProfilePage = () => {
                     </Grid>
                 </Grid>
             </Paper>
+
+            <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Chỉnh sửa thông tin cá nhân</DialogTitle>
+                <DialogContent dividers>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} textAlign="center">
+                            <Avatar src={preview} sx={{ width: 80, height: 80, mx: 'auto' }} />
+                            <Button variant="outlined" component="label" sx={{ mt: 1 }}>
+                                📷 Chọn ảnh
+                                <input type="file" accept="image/*" hidden onChange={handleFileChange} />
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField fullWidth label="Email" name="email" value={form.email || ''} onChange={handleChange} />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField fullWidth label="Số điện thoại" name="phoneNumber" value={form.phoneNumber || ''} onChange={handleChange} />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField fullWidth label="Địa chỉ" name="address" value={form.address || ''} onChange={handleChange} />
+                        </Grid>
+                        {user?.account?.role?.name === 'ADMIN' && (
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    label="Vai trò"
+                                    name="account.role.id"
+                                    select
+                                    value={form.account?.role?.id || ''}
+                                    onChange={(e) => setForm({
+                                        ...form,
+                                        account: {
+                                            ...form.account,
+                                            role: { id: parseInt(e.target.value) }
+                                        }
+                                    })}
+                                >
+                                    <MenuItem value={1}>Quản trị viên</MenuItem>
+                                    <MenuItem value={2}>Shiper</MenuItem>
+                                    <MenuItem value={3}>Nhân viên</MenuItem>
+                                    <MenuItem value={4}>Khách hàng</MenuItem>
+                                </TextField>
+                            </Grid>
+                        )}
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditOpen(false)}>Hủy</Button>
+                    <Button onClick={handleSubmit} variant="contained">Lưu</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

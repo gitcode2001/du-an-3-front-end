@@ -115,3 +115,7 @@
     export const resendOtp = async (emailOrUsername) => {
         return await forgotPassword(emailOrUsername);
     };
+    export const getAllShippers = async () => {
+        const response = await axios.get(`${API_URL}/shippers`);
+        return response.data;
+    };
