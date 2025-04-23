@@ -78,7 +78,7 @@ const RegisterPage = () => {
                 account: {
                     username: form.username,
                     password: form.password,
-                    role: { id: 3 }
+                    role: { id: 4 }
                 }
             };
 

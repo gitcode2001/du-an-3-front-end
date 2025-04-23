@@ -7,12 +7,15 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import PrivateRoute from './routes/PrivateRoute';
-import AdminAccountManager from "./pages/AdminAccountManager";
-import ProfilePage from "./pages/ProfilePage";
-import LaundryBookingComponent from "./booking/LaundryBookingComponent";
-import LaundryOrderHistory from "./booking/LaundryOrderHistory";
-import CategoryManagerComponent from "./category/CategoryManagerComponent";
-import AdminOrderList from "./booking/AdminOrderList";
+import AdminAccountManager from './pages/AdminAccountManager';
+import ProfilePage from './pages/ProfilePage';
+import LaundryBookingComponent from './booking/LaundryBookingComponent';
+import LaundryOrderHistory from './booking/LaundryOrderHistory';
+import CategoryManagerComponent from './category/CategoryManagerComponent';
+import AdminOrderList from './booking/AdminOrderList';
+import OrderTracking from './booking/OrderTracking';
+import UserOrderList from './booking/UserOrderList';
+import ShipperOrderList from "./pages/ShipperOrderList";
 
 function App() {
     return (
@@ -23,12 +26,16 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
-                <Route path="/account-manager" element={<AdminAccountManager />} />
-                <Route path="/profile" element={<ProfilePage/>}/>
-                <Route path="/booking" element={<LaundryBookingComponent/>}/>
-                <Route path="/history-booking" element={<LaundryOrderHistory/>}/>
-                <Route path="/categories" element={<CategoryManagerComponent/>}/>
-                <Route path="/order-list" element={<AdminOrderList/>}/>
+                <Route path="/account-manager" element={<PrivateRoute><AdminAccountManager /></PrivateRoute>} />
+                <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+                <Route path="/booking" element={<PrivateRoute><LaundryBookingComponent /></PrivateRoute>} />
+                <Route path="/history-booking" element={<PrivateRoute><LaundryOrderHistory /></PrivateRoute>} />
+                <Route path="/categories" element={<PrivateRoute><CategoryManagerComponent /></PrivateRoute>} />
+                <Route path="/order-list" element={<PrivateRoute><AdminOrderList /></PrivateRoute>} />
+                <Route path="/order-tracking/:orderId" element={<PrivateRoute><OrderTracking initialStatus="PENDING" /></PrivateRoute>} />
+                <Route path="/my-orders" element={<PrivateRoute><UserOrderList /></PrivateRoute>} />
+                <Route path="/shipper-orders" element={<ShipperOrderList />} />
+
             </Routes>
         </Router>
     );

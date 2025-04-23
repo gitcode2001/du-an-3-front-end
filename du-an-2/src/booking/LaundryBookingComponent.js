@@ -83,6 +83,7 @@ const LaundryBookingComponent = () => {
                 note,
                 address,
                 totalPrice: calculateTotal(),
+                status: 'Đang chờ xử lý', // ✅ Thêm status rõ ràng
                 items: items.map(item => ({
                     type: categories.find(cat => cat.id === item.categoryId)?.name || '',
                     quantity: item.quantity,

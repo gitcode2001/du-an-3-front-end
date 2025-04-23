@@ -37,13 +37,16 @@ const Navbar = ({ onSearch }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [menuAnchor, setMenuAnchor] = useState(null);
 
-    const { isAuthenticated, username, logout, role } = useAuth(); // 🔥 lấy thêm role
+    const { isAuthenticated, username, logout, role } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const navigate = useNavigate();
 
     const handleSearch = () => {
-        if (searchQuery.trim()) onSearch?.(searchQuery);
+        if (searchQuery.trim()) {
+            onSearch?.(searchQuery);
+            navigate('/');
+        }
     };
 
     const handleClear = () => setSearchQuery('');
@@ -55,7 +58,6 @@ const Navbar = ({ onSearch }) => {
     return (
         <AppBar position="static" sx={{ backgroundColor: '#2196f3' }}>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                {/* Logo + Tìm kiếm */}
                 <Box display="flex" alignItems="center" flex={1}>
                     <LocalLaundryServiceIcon sx={{ mr: 1 }} />
                     <Typography variant="h6" noWrap>FastLaundry</Typography>
@@ -80,12 +82,28 @@ const Navbar = ({ onSearch }) => {
                     )}
                 </Box>
 
-                {/* Menu phải */}
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
                     {!isMobile && (
                         <>
                             <Button color="inherit" onClick={() => navigate('/')}>Trang chủ</Button>
-                            <Button color="inherit" onClick={() => navigate('/booking')}>Đặt lịch</Button>
+                            {role === 'customer' && (
+                                <>
+                                    <Button color="inherit" onClick={() => navigate('/booking')}>Đặt lịch</Button>
+                                    <Button color="inherit" onClick={() => navigate('/my-orders')}>Đơn của tôi</Button>
+                                </>
+                            )}
+                            {role === 'staff' && (
+                                <Button color="inherit" onClick={() => navigate('/order-list')}>Xem Đơn Hàng</Button>
+                            )}
+                            {role === 'shipper' && (
+                                <Button color="inherit" onClick={() => navigate('/shipper-orders')}>Đơn cần giao</Button>
+                            )}
+                            {role === 'admin' && (
+                                <>
+                                    <Button color="inherit" onClick={() => navigate('/order-list')}>Quản lý đơn</Button>
+                                    <Button color="inherit" onClick={() => navigate('/account-manager')}>Quản lý tài khoản</Button>
+                                </>
+                            )}
                             <Button color="inherit" onClick={() => navigate('/about')}>Giới thiệu</Button>
                             <Button color="inherit" onClick={() => navigate('/contact')}>Liên hệ</Button>
                         </>
@@ -99,23 +117,10 @@ const Navbar = ({ onSearch }) => {
                         {isAuthenticated ? (
                             <>
                                 <MenuItem disabled>👋 Xin chào, {username}</MenuItem>
-                                <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }}>
-                                    Thông tin cá nhân
-                                </MenuItem>
-                                <MenuItem onClick={() => { navigate('/reset-password'); handleMenuClose(); }}>
-                                    Đổi mật khẩu
-                                </MenuItem>
-                                <MenuItem onClick={() => { navigate('/forgot-password'); handleMenuClose(); }}>
-                                    Quên mật khẩu
-                                </MenuItem>
-                                {role === 'admin' && (
-                                    <MenuItem onClick={() => { navigate('/account-manager'); handleMenuClose(); }}>
-                                        👥 Quản lý tài khoản
-                                    </MenuItem>
-                                )}
-                                <MenuItem onClick={() => { logout(); navigate('/login'); }}>
-                                    Đăng xuất
-                                </MenuItem>
+                                <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }}>Thông tin cá nhân</MenuItem>
+                                <MenuItem onClick={() => { navigate('/reset-password'); handleMenuClose(); }}>Đổi mật khẩu</MenuItem>
+                                <MenuItem onClick={() => { navigate('/forgot-password'); handleMenuClose(); }}>Quên mật khẩu</MenuItem>
+                                <MenuItem onClick={() => { logout(); navigate('/login'); }}>Đăng xuất</MenuItem>
                             </>
                         ) : (
                             <>
@@ -132,7 +137,24 @@ const Navbar = ({ onSearch }) => {
                             </IconButton>
                             <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMainMenuClose}>
                                 <MenuItem onClick={() => navigate('/')}>Trang chủ</MenuItem>
-                                <MenuItem onClick={() => navigate('/booking')}>Đặt lịch</MenuItem>
+                                {role === 'CUSTOMER' && (
+                                    <>
+                                        <MenuItem onClick={() => navigate('/booking')}>Đặt lịch</MenuItem>
+                                        <MenuItem onClick={() => navigate('/my-orders')}>Đơn của tôi</MenuItem>
+                                    </>
+                                )}
+                                {role === 'STAFF' && (
+                                    <MenuItem onClick={() => navigate('/order-list')}>Quản lý đơn</MenuItem>
+                                )}
+                                {role === 'SHIPPER' && (
+                                    <MenuItem onClick={() => navigate('/shipper-orders')}>Đơn cần giao</MenuItem>
+                                )}
+                                {role === 'ADMIN' && (
+                                    <>
+                                        <MenuItem onClick={() => navigate('/order-list')}>Quản lý đơn</MenuItem>
+                                        <MenuItem onClick={() => navigate('/account-manager')}>Quản lý tài khoản</MenuItem>
+                                    </>
+                                )}
                                 <MenuItem onClick={() => navigate('/about')}>Giới thiệu</MenuItem>
                                 <MenuItem onClick={() => navigate('/contact')}>Liên hệ</MenuItem>
                             </Menu>
