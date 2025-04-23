@@ -11,6 +11,9 @@ const EditUserDialog = ({ open, onClose, user, onSave }) => {
     const [avatarFile, setAvatarFile] = useState(null);
     const [preview, setPreview] = useState('');
 
+    // ✅ Lấy vai trò hiện tại từ localStorage
+    const currentUserRole = localStorage.getItem('role');
+
     useEffect(() => {
         if (user) {
             setForm({
@@ -46,7 +49,7 @@ const EditUserDialog = ({ open, onClose, user, onSave }) => {
                 gender: form.gender === 'true' || form.gender === true,
                 account: {
                     ...form.account,
-                    role: form.account?.role?.id ? { id: form.roleId } : form.account?.role
+                    role: { id: parseInt(form.roleId) }
                 }
             };
 
@@ -71,18 +74,9 @@ const EditUserDialog = ({ open, onClose, user, onSave }) => {
                             sx={{ width: 90, height: 90, border: '2px solid #1976d2', mb: 1 }}
                         />
                         <Typography variant="body2">Ảnh đại diện</Typography>
-                        <Button
-                            variant="outlined"
-                            component="label"
-                            sx={{ mt: 1 }}
-                        >
+                        <Button variant="outlined" component="label" sx={{ mt: 1 }}>
                             📤 Chọn ảnh đại diện
-                            <input
-                                type="file"
-                                accept="image/*"
-                                hidden
-                                onChange={handleFileChange}
-                            />
+                            <input type="file" accept="image/*" hidden onChange={handleFileChange} />
                         </Button>
                         <Typography variant="body2" mt={1} color="text.secondary">
                             {avatarFile ? avatarFile.name : 'Không có ảnh được chọn'}
@@ -107,9 +101,17 @@ const EditUserDialog = ({ open, onClose, user, onSave }) => {
                         </TextField>
                     </Grid>
                     <Grid item xs={6}>
-                        <TextField label="Vai trò" name="roleId" select value={form.roleId || ''} onChange={handleChange} fullWidth disabled={form.role !== 'ADMIN'}>
+                        <TextField
+                            label="Vai trò"
+                            name="roleId"
+                            select
+                            value={form.roleId || ''}
+                            onChange={handleChange}
+                            fullWidth
+                            disabled={currentUserRole.toLowerCase() !== 'admin'}
+                        >
                             <MenuItem value={1}>Quản trị viên</MenuItem>
-                            <MenuItem value={2}>Shiper</MenuItem>
+                            <MenuItem value={2}>Shipper</MenuItem>
                             <MenuItem value={3}>Nhân viên</MenuItem>
                             <MenuItem value={4}>Khách hàng</MenuItem>
                         </TextField>

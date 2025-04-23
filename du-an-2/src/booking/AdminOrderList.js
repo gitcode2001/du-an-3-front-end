@@ -14,9 +14,7 @@ import html2pdf from 'html2pdf.js';
 
 const statusOptions = [
     { value: 'PENDING', label: 'Đang chờ xử lý' },
-    { value: 'PICKED_UP', label: 'Đã lấy đồ' },
     { value: 'IN_PROCESS', label: 'Đang xử lý' },
-    { value: 'DELIVERED', label: 'Đã giao' },
     { value: 'CANCELLED', label: 'Đã huỷ' }
 ];
 

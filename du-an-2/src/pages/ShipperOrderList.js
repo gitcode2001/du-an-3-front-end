@@ -1,37 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import {
     Paper, Typography, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, CircularProgress, Snackbar, Alert, Button, IconButton
+    TableHead, TableRow, CircularProgress, Snackbar, Alert, Button, IconButton, Menu, MenuItem
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { getOrdersByShipperId, updateOrderStatus, deleteOrder } from '../services/LaundryOrderService';
+import { getOrdersByShipperId, updateOrderStatus, softDeleteOrder } from '../services/LaundryOrderService';
 
 const statusMap = {
     PENDING: 'Đang chờ xử lý',
     PICKED_UP: 'Đã lấy đồ',
     IN_PROCESS: 'Đang giặt',
-    DELIVERED: 'Đã giao',
     CANCELLED: 'Đã huỷ'
 };
 
-const getNextStatus = (currentStatus) => {
-    switch (currentStatus) {
-        case 'PENDING':
-            return { next: 'PICKED_UP', label: '✅ Xác nhận lấy', color: 'warning' };
-        case 'PICKED_UP':
-            return { next: 'IN_PROCESS', label: '🧺 Đang giặt', color: 'info' };
-        case 'IN_PROCESS':
-            return { next: 'DELIVERED', label: '🚚 Đã giao hàng', color: 'success' };
-        default:
-            return null;
-    }
-};
+const statusList = [
+    { value: 'PENDING', label: 'Đang chờ xử lý' },
+    { value: 'PICKED_UP', label: 'Đã lấy đồ' },
+    { value: 'DELIVERED', label: 'Đã giao' },
+    { value: 'CANCELLED', label: 'Đã huỷ' }
+];
 
 const ShipperOrderList = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
 
     const shipperId = localStorage.getItem('userId');
 
@@ -47,7 +42,7 @@ const ShipperOrderList = () => {
     const fetchOrders = async () => {
         try {
             const res = await getOrdersByShipperId(shipperId);
-            setOrders(res);
+            setOrders(res.filter(order => !order.deletedByShipper));
         } catch (err) {
             console.error('❌ Lỗi khi lấy đơn hàng của shipper:', err);
             setSnackbar({ open: true, message: 'Lỗi khi tải danh sách đơn hàng', severity: 'error' });
@@ -70,18 +65,28 @@ const ShipperOrderList = () => {
         }
     };
 
-    const handleDelete = async (orderId) => {
+    const handleDelete = async (orderId, customerName) => {
         setLoading(true);
         try {
-            await deleteOrder(orderId);
-            setSnackbar({ open: true, message: '🗑️ Đã xoá đơn hàng!', severity: 'info' });
+            await softDeleteOrder(orderId);
+            setSnackbar({ open: true, message: `🗑 Đã xoá đơn hàng của ${customerName}!`, severity: 'info' });
             fetchOrders();
         } catch (err) {
-            console.error('❌ Lỗi xoá đơn hàng:', err);
-            setSnackbar({ open: true, message: '❌ Không thể xoá đơn hàng', severity: 'error' });
+            console.error(' Lỗi xoá mềm đơn hàng:', err);
+            setSnackbar({ open: true, message: ' Không thể xoá đơn hàng', severity: 'error' });
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleMenuClick = (event, orderId) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedOrderId(orderId);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setSelectedOrderId(null);
     };
 
     const getStatusLabel = (status) => statusMap[status] || status;
@@ -107,42 +112,46 @@ const ShipperOrderList = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {orders.map((order) => {
-                                const next = getNextStatus(order.status);
-                                return (
-                                    <TableRow key={order.id}>
-                                        <TableCell>{order.id}</TableCell>
-                                        <TableCell>{order.user?.fullName}</TableCell>
-                                        <TableCell>{order.address}</TableCell>
-                                        <TableCell>{getStatusLabel(order.status)}</TableCell>
-                                        <TableCell>{new Date(order.pickupTime).toLocaleString('vi-VN')}</TableCell>
-                                        <TableCell>{new Date(order.deliveryTime).toLocaleString('vi-VN')}</TableCell>
-                                        <TableCell>
-                                            {next ? (
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    color={next.color}
-                                                    onClick={() => handleStatusUpdate(order.id, next.next)}
-                                                    sx={{ mr: 1 }}
-                                                >
-                                                    {next.label}
-                                                </Button>
-                                            ) : null}
-                                            <IconButton color="primary" size="small">
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton color="error" size="small" onClick={() => handleDelete(order.id)}>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                            {orders.map((order) => (
+                                <TableRow key={order.id}>
+                                    <TableCell>{order.id}</TableCell>
+                                    <TableCell>{order.user?.fullName}</TableCell>
+                                    <TableCell>{order.address}</TableCell>
+                                    <TableCell>{getStatusLabel(order.status)}</TableCell>
+                                    <TableCell>{new Date(order.pickupTime).toLocaleString('vi-VN')}</TableCell>
+                                    <TableCell>{new Date(order.deliveryTime).toLocaleString('vi-VN')}</TableCell>
+                                    <TableCell>
+                                        <IconButton color="primary" size="small" onClick={(e) => handleMenuClick(e, order.id)}>
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton color="error" size="small" onClick={() => handleDelete(order.id, order.user?.fullName)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
             )}
+
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+            >
+                {statusList.map(({ value, label }) => (
+                    <MenuItem
+                        key={value}
+                        onClick={() => {
+                            handleStatusUpdate(selectedOrderId, value);
+                            handleMenuClose();
+                        }}
+                    >
+                        {label}
+                    </MenuItem>
+                ))}
+            </Menu>
 
             <Snackbar
                 open={snackbar.open}
