@@ -9,11 +9,11 @@ import { getOrdersByUserId, getOrderById, deleteOrder } from '../services/Laundr
 
 const statusOptions = [
     { value: '', label: 'Tất cả' },
-    { value: 'PENDING', label: 'Đang chờ xử lý' },
-    { value: 'PICKED_UP', label: 'Đã lấy đồ' },
-    { value: 'IN_PROCESS', label: 'Đang giặt' },
-    { value: 'DELIVERED', label: 'Đã giao' },
-    { value: 'CANCELLED', label: 'Đã huỷ' }
+    { value: 'Đang chờ xử lý', label: 'Đang chờ xử lý' },
+    { value: 'Đã lấy đồ', label: 'Đã lấy đồ' },
+    { value: 'Đang giặt', label: 'Đang giặt' },
+    { value: 'Đã giao', label: 'Đã giao' },
+    { value: 'Đã huỷ', label: 'Đã huỷ' }
 ];
 
 const UserOrderList = () => {
@@ -70,12 +70,12 @@ const UserOrderList = () => {
     const handleStatusFilterChange = (event) => {
         const value = event.target.value;
         setStatusFilter(value);
-        const filtered = value ? orders.filter(order => order.status === value) : orders;
+        const filtered = value
+            ? orders.filter(order => order.status === value)
+            : orders;
         setFilteredOrders(filtered);
         setPage(0);
     };
-
-    const getStatusLabel = (value) => statusOptions.find(opt => opt.value === value)?.label || value;
 
     if (loading) {
         return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 4 }} />;
@@ -114,12 +114,12 @@ const UserOrderList = () => {
                             <TableRow key={order.id}>
                                 <TableCell>{order.id}</TableCell>
                                 <TableCell>{new Date(order.pickupTime).toLocaleString('vi-VN')}</TableCell>
-                                <TableCell>{getStatusLabel(order.status)}</TableCell>
+                                <TableCell>{order.status}</TableCell>
                                 <TableCell>{order.totalPrice?.toLocaleString('vi-VN')} VND</TableCell>
                                 <TableCell>
                                     <Button size="small" onClick={() => handleViewDetail(order.id)}>Chi tiết</Button>
                                     <Button size="small" component={Link} to={`/order-tracking/${order.id}`}>Theo dõi</Button>
-                                    {order.status === 'PENDING' && (
+                                    {order.status === 'Đang chờ xử lý' && (
                                         <Button size="small" color="error" onClick={() => setConfirmCancel({ open: true, orderId: order.id })}>Huỷ</Button>
                                     )}
                                 </TableCell>
@@ -147,7 +147,7 @@ const UserOrderList = () => {
                             <Typography><strong>Địa chỉ:</strong> {selectedOrder.address}</Typography>
                             <Typography><strong>Ghi chú:</strong> {selectedOrder.note || 'Không có'}</Typography>
                             <Typography><strong>Shipper:</strong> {selectedOrder.shipper?.username}</Typography>
-                            <Typography><strong>Trạng thái:</strong> {getStatusLabel(selectedOrder.status)}</Typography>
+                            <Typography><strong>Trạng thái:</strong> {selectedOrder.status}</Typography>
                             <Typography><strong>Thời gian lấy:</strong> {new Date(selectedOrder.pickupTime).toLocaleString('vi-VN')}</Typography>
                             <Typography><strong>Thời gian giao:</strong> {new Date(selectedOrder.deliveryTime).toLocaleString('vi-VN')}</Typography>
 

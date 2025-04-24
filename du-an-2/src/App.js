@@ -16,6 +16,8 @@ import AdminOrderList from './booking/AdminOrderList';
 import OrderTracking from './booking/OrderTracking';
 import UserOrderList from './booking/UserOrderList';
 import ShipperOrderList from "./pages/ShipperOrderList";
+import PaymentCancel from "./paypal/PaymentCancel";
+import PayPalPaymentComponent from "./paypal/PayPalPaymentComponent";
 
 function App() {
     return (
@@ -35,6 +37,8 @@ function App() {
                 <Route path="/order-tracking/:orderId" element={<PrivateRoute><OrderTracking initialStatus="PENDING" /></PrivateRoute>} />
                 <Route path="/my-orders" element={<PrivateRoute><UserOrderList /></PrivateRoute>} />
                 <Route path="/shipper-orders" element={<ShipperOrderList />} />
+                <Route path="/payment-cancel" element={<PaymentCancel />} />
+                <Route path="/payment" element={<PayPalPaymentComponent/>}/>
 
             </Routes>
         </Router>
