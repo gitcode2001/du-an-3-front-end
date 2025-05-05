@@ -9,7 +9,7 @@ export const createPayment = async (amount, orderId) => {
         });
         return response.data;
     } catch (error) {
-        console.error('❌ Lỗi khi tạo thanh toán:', error);
+        console.error('❌ Lỗi khi tạo thanh toán:', error.response ? error.response.data : error);
         throw error;
     }
 };
@@ -27,12 +27,13 @@ export const executePayment = async (paymentId, payerId, orderId) => {
             typeof error.response.data === "string" &&
             error.response.data.includes("PAYMENT_ALREADY_DONE")
         ) {
-            return "PAYMENT_ALREADY_DONE";
+            return { status: 'fail', message: "PAYMENT_ALREADY_DONE" };
         }
-        console.error("❌ Lỗi khi xác nhận thanh toán:", error);
+        console.error('❌ Lỗi khi xác nhận thanh toán:', error);
         throw error;
     }
 };
+
 
 export const cancelPayment = async (orderId) => {
     try {
@@ -41,7 +42,7 @@ export const cancelPayment = async (orderId) => {
         });
         return response.data;
     } catch (error) {
-        console.error('❌ Lỗi khi huỷ thanh toán:', error);
+        console.error('❌ Lỗi khi huỷ thanh toán:', error.response ? error.response.data : error);
         throw error;
     }
 };

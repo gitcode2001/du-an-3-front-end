@@ -1,19 +1,18 @@
 import React from "react";
-import { Box, Typography, IconButton, Container, Grid } from "@mui/material";
+import { Box, Typography, IconButton, Container, Grid, Link } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
-import YouTubeIcon from "@mui/icons-material/YouTube";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import YouTubeIcon from "@mui/icons-material/YouTube";
 
 const Footer = () => {
     return (
         <Box
             component="footer"
             sx={{
-                bgcolor: "#0f172a", // màu tối hiện đại
+                bgcolor: "#0f172a",
                 color: "white",
-                pt: 6,
-                pb: 3,
-                mt: "auto",
+                pt: 8,
+                pb: 4,
                 fontFamily: "Arial, sans-serif",
             }}
         >
@@ -21,18 +20,26 @@ const Footer = () => {
                 <Grid container spacing={4}>
                     {/* Cột 1: Thông tin dịch vụ */}
                     <Grid item xs={12} md={4}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        <Typography variant="h5" fontWeight="bold" mb={2}>
                             FastLaundry
                         </Typography>
-                        <Typography variant="body2" mb={1}>Dịch vụ giặt sấy tận nơi, nhanh chóng – sạch sẽ – chuyên nghiệp.</Typography>
-                        <Typography variant="body2">Địa chỉ: 295 Nguyễn Tất Thành, Hải Châu, Đà Nẵng</Typography>
-                        <Typography variant="body2">Hotline: 0935.558.143</Typography>
-                        <Typography variant="body2">Email: fastlaundry@gmail.com</Typography>
+                        <Typography variant="body2" mb={1}>
+                            Dịch vụ giặt sấy tận nơi, nhanh chóng – sạch sẽ – chuyên nghiệp.
+                        </Typography>
+                        <Typography variant="body2" mb={0.5}>
+                            Địa chỉ: 295 Nguyễn Tất Thành, Hải Châu, Đà Nẵng
+                        </Typography>
+                        <Typography variant="body2" mb={0.5}>
+                            Hotline: 0935.558.143
+                        </Typography>
+                        <Typography variant="body2">
+                            Email: fastlaundry@gmail.com
+                        </Typography>
                     </Grid>
 
-                    {/* Cột 2: Chính sách & liên kết */}
+                    {/* Cột 2: Chính sách & hướng dẫn */}
                     <Grid item xs={12} md={4}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        <Typography variant="h6" fontWeight="bold" mb={2}>
                             Chính sách & Hướng dẫn
                         </Typography>
                         {[
@@ -41,17 +48,18 @@ const Footer = () => {
                             "Chính sách đổi trả",
                             "Chính sách bảo mật",
                             "Liên hệ hỗ trợ",
-                        ].map((item, index) => (
+                        ].map((item, idx) => (
                             <Typography
-                                key={index}
+                                key={idx}
                                 variant="body2"
+                                component={Link}
+                                href="#"
+                                underline="none"
                                 sx={{
-                                    cursor: "pointer",
+                                    display: "block",
                                     mb: 1,
-                                    "&:hover": {
-                                        color: "#38bdf8",
-                                        textDecoration: "underline",
-                                    },
+                                    color: "inherit",
+                                    "&:hover": { color: "#38bdf8", textDecoration: "underline" },
                                 }}
                             >
                                 {item}
@@ -59,18 +67,17 @@ const Footer = () => {
                         ))}
                     </Grid>
 
-                    {/* Cột 3: Google Map */}
+                    {/* Cột 3: Bản đồ Google */}
                     <Grid item xs={12} md={4}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        <Typography variant="h6" fontWeight="bold" mb={2}>
                             Tìm chúng tôi tại đây
                         </Typography>
                         <Box
                             sx={{
-                                width: "100%",
-                                height: 200,
                                 borderRadius: 2,
                                 overflow: "hidden",
-                                boxShadow: 2,
+                                boxShadow: 3,
+                                height: 200,
                             }}
                         >
                             <iframe
@@ -79,31 +86,31 @@ const Footer = () => {
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
-                                allowFullScreen=""
                                 loading="lazy"
+                                allowFullScreen=""
                             ></iframe>
                         </Box>
                     </Grid>
                 </Grid>
 
-                {/* Social + Bản quyền */}
-                <Box sx={{ textAlign: "center", mt: 4 }}>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                {/* Line phân cách */}
+                <Box sx={{ borderTop: "1px solid #334155", mt: 6, pt: 3, textAlign: "center" }}>
+                    <Typography variant="h6" fontWeight="bold" mb={2}>
                         Kết nối với chúng tôi
                     </Typography>
-                    <Box>
-                        <IconButton color="inherit" href="https://facebook.com" target="_blank">
+                    <Box mb={2}>
+                        <IconButton href="https://facebook.com" target="_blank" color="inherit">
                             <FacebookIcon />
                         </IconButton>
-                        <IconButton color="inherit" href="https://instagram.com" target="_blank">
+                        <IconButton href="https://instagram.com" target="_blank" color="inherit">
                             <InstagramIcon />
                         </IconButton>
-                        <IconButton color="inherit" href="https://youtube.com" target="_blank">
+                        <IconButton href="https://youtube.com" target="_blank" color="inherit">
                             <YouTubeIcon />
                         </IconButton>
                     </Box>
 
-                    <Typography variant="body2" sx={{ mt: 2 }}>
+                    <Typography variant="body2" color="gray">
                         © 2025 FastLaundry. All rights reserved.
                     </Typography>
                 </Box>

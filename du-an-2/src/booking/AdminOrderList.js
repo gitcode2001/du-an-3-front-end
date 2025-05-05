@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-    getAllOrders, deleteOrder, updateOrderStatus, getOrderById
+    getAllOrders, softDeleteOrderByAdmin, updateOrderStatus, getOrderById
 } from '../services/LaundryOrderService';
 import {
     Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -17,11 +17,6 @@ const statusOptions = [
     { value: 'IN_PROCESS', label: 'Đang xử lý' },
     { value: 'CANCELLED', label: 'Đã huỷ' }
 ];
-
-const statusMap = statusOptions.reduce((acc, curr) => {
-    acc[curr.value] = curr.label;
-    return acc;
-}, {});
 
 const AdminOrderList = () => {
     const [orders, setOrders] = useState([]);
@@ -47,19 +42,20 @@ const AdminOrderList = () => {
             setLoading(false);
         }
     };
-
     const handleDelete = async (id) => {
         try {
-            await deleteOrder(id);
-            setSnackbar({ open: true, message: '✅ Đã xoá đơn thành công!', severity: 'success' });
+            await softDeleteOrderByAdmin(id);
+            setSnackbar({ open: true, message: '✅ Đã ẩn đơn hàng thành công!', severity: 'success' });
             fetchOrders();
         } catch (error) {
             console.error(error);
-            setSnackbar({ open: true, message: '❌ Xoá đơn thất bại!', severity: 'error' });
+            setSnackbar({ open: true, message: '❌ Ẩn đơn hàng thất bại!', severity: 'error' });
         } finally {
             setDeleteDialog({ open: false, orderId: null });
         }
     };
+
+
 
     const handleUpdateStatus = async () => {
         const { orderId, currentStatus } = statusDialog;
@@ -100,9 +96,7 @@ const AdminOrderList = () => {
     const formatDate = (dateStr) => new Date(dateStr).toLocaleString('vi-VN');
     const formatMoney = (amount) => amount?.toLocaleString('vi-VN') + ' VND';
 
-    if (loading) {
-        return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 4 }} />;
-    }
+    if (loading) return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 4 }} />;
 
     return (
         <Paper sx={{ p: 2 }}>
@@ -118,12 +112,13 @@ const AdminOrderList = () => {
                             <TableCell>Ngày lấy</TableCell>
                             <TableCell>Ngày giao</TableCell>
                             <TableCell>Tổng tiền</TableCell>
+                            <TableCell>Thanh toán</TableCell>
                             <TableCell>Trạng thái</TableCell>
                             <TableCell>Hành động</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orders.map((order) => (
+                        {orders.map(order => (
                             <TableRow key={order.id}>
                                 <TableCell>{order.id}</TableCell>
                                 <TableCell>{order.user?.fullName}</TableCell>
@@ -131,10 +126,11 @@ const AdminOrderList = () => {
                                 <TableCell>{formatDate(order.pickupTime)}</TableCell>
                                 <TableCell>{formatDate(order.deliveryTime)}</TableCell>
                                 <TableCell>{formatMoney(order.totalPrice)}</TableCell>
-                                <TableCell>{order.status || 'Không rõ'}</TableCell>
+                                <TableCell>{order.paymentMethod}</TableCell>
+                                <TableCell>{order.status}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => handleViewDetail(order.id)}><VisibilityIcon /></IconButton>
-                                    <IconButton onClick={() => setStatusDialog({ open: true, orderId: order.id, currentStatus: order.status?.toUpperCase() || '' })}><EditIcon /></IconButton>
+                                    <IconButton onClick={() => setStatusDialog({ open: true, orderId: order.id, currentStatus: order.status })}><EditIcon /></IconButton>
                                     <IconButton onClick={() => setDeleteDialog({ open: true, orderId: order.id })}><DeleteIcon /></IconButton>
                                 </TableCell>
                             </TableRow>
@@ -143,18 +139,17 @@ const AdminOrderList = () => {
                 </Table>
             </TableContainer>
 
-            {/* Dialogs */}
             <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, orderId: null })}>
-                <DialogTitle>Xác nhận xoá</DialogTitle>
-                <DialogContent>Bạn có chắc chắn muốn xoá đơn hàng này?</DialogContent>
+                <DialogTitle>Xác nhận ẩn đơn</DialogTitle>
+                <DialogContent>Bạn có chắc muốn ẩn đơn hàng này không? Người dùng vẫn sẽ thấy đơn này.</DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDeleteDialog({ open: false, orderId: null })}>Huỷ</Button>
-                    <Button onClick={() => handleDelete(deleteDialog.orderId)} color="error">Xoá</Button>
+                    <Button onClick={() => handleDelete(deleteDialog.orderId)} color="error">Xác nhận</Button>
                 </DialogActions>
             </Dialog>
 
             <Dialog open={statusDialog.open} onClose={() => setStatusDialog({ open: false, orderId: null, currentStatus: '' })}>
-                <DialogTitle>Cập nhật trạng thái</DialogTitle>
+                <DialogTitle>Cập nhật trạng thái đơn</DialogTitle>
                 <DialogContent>
                     <TextField
                         select
@@ -164,9 +159,7 @@ const AdminOrderList = () => {
                         label="Trạng thái"
                         margin="normal"
                     >
-                        {statusOptions.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                        ))}
+                        {statusOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
                     </TextField>
                 </DialogContent>
                 <DialogActions>
@@ -176,7 +169,7 @@ const AdminOrderList = () => {
             </Dialog>
 
             <Dialog open={detailDialog.open} onClose={() => setDetailDialog({ open: false, order: null })} maxWidth="md" fullWidth>
-                <DialogTitle>Chi tiết đơn hàng #{detailDialog.order?.id}</DialogTitle>
+                <DialogTitle>Chi tiết đơn #{detailDialog.order?.id}</DialogTitle>
                 <DialogContent dividers>
                     {detailDialog.order && (
                         <Box id="invoice-content">
@@ -186,7 +179,7 @@ const AdminOrderList = () => {
                                     <Divider sx={{ mb: 1 }} />
                                     <Grid container spacing={2}>
                                         <Grid item xs={12} sm={6}>
-                                            <Typography><strong>Khách hàng:</strong> {detailDialog.order.user?.fullName}</Typography>
+                                            <Typography><strong>Khách:</strong> {detailDialog.order.user?.fullName}</Typography>
                                             <Typography><strong>Shipper:</strong> {detailDialog.order.shipper?.username}</Typography>
                                             <Typography><strong>Địa chỉ:</strong> {detailDialog.order.address}</Typography>
                                             <Typography><strong>Ghi chú:</strong> {detailDialog.order.note || 'Không có'}</Typography>
@@ -194,12 +187,12 @@ const AdminOrderList = () => {
                                         <Grid item xs={12} sm={6}>
                                             <Typography><strong>Thời gian lấy:</strong> {formatDate(detailDialog.order.pickupTime)}</Typography>
                                             <Typography><strong>Thời gian giao:</strong> {formatDate(detailDialog.order.deliveryTime)}</Typography>
-                                            <Typography><strong>Trạng thái:</strong> {detailDialog.order.status || 'Không rõ'}</Typography>
+                                            <Typography><strong>Phương thức thanh toán:</strong> {detailDialog.order.paymentMethod}</Typography>
+                                            <Typography><strong>Trạng thái:</strong> {detailDialog.order.status}</Typography>
                                         </Grid>
                                     </Grid>
                                 </CardContent>
                             </Card>
-
                             <Typography variant="h6" gutterBottom>Danh sách đồ giặt</Typography>
                             <Divider sx={{ mb: 1 }} />
                             <Table size="small">
@@ -220,11 +213,8 @@ const AdminOrderList = () => {
                                     ))}
                                 </TableBody>
                             </Table>
-
-                            <Box display="flex" justifyContent="flex-end" mt={3}>
-                                <Typography variant="h6" fontWeight="bold">
-                                    Tổng tiền: {formatMoney(detailDialog.order.totalPrice)}
-                                </Typography>
+                            <Box display="flex" justifyContent="flex-end" mt={2}>
+                                <Typography variant="h6" fontWeight="bold">Tổng: {formatMoney(detailDialog.order.totalPrice)}</Typography>
                             </Box>
                         </Box>
                     )}

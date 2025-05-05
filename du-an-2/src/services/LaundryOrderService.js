@@ -27,6 +27,13 @@ export const getOrdersByShipperId = async (shipperId) => {
     return res.data;
 };
 
+export const getOrdersByShipperIdAndStatus = async (shipperId, status) => {
+    const res = await axios.get(`${API_BASE}/shipper/${shipperId}/status`, {
+        params: { status }
+    });
+    return res.data;
+};
+
 export const updateOrderStatus = async (id, status) => {
     const res = await axios.put(`${API_BASE}/${id}/status`, { status });
     return res.data;
@@ -34,6 +41,11 @@ export const updateOrderStatus = async (id, status) => {
 
 export const softDeleteOrder = async (orderId) => {
     const res = await axios.put(`${API_BASE}/${orderId}/soft-delete`);
+    return res.data;
+};
+
+export const softDeleteOrderByAdmin = async (orderId) => {
+    const res = await axios.put(`${API_BASE}/${orderId}/soft-delete-admin`);
     return res.data;
 };
 

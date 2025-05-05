@@ -18,6 +18,7 @@ import UserOrderList from './booking/UserOrderList';
 import ShipperOrderList from "./pages/ShipperOrderList";
 import PaymentCancel from "./paypal/PaymentCancel";
 import PayPalPaymentComponent from "./paypal/PayPalPaymentComponent";
+import PaymentSuccess from "./paypal/PaymentSuccess";
 
 function App() {
     return (
@@ -39,7 +40,8 @@ function App() {
                 <Route path="/shipper-orders" element={<ShipperOrderList />} />
                 <Route path="/payment-cancel" element={<PaymentCancel />} />
                 <Route path="/payment" element={<PayPalPaymentComponent/>}/>
-
+                <Route path="/payment/success" element={<PaymentSuccess />} />
+                <Route path="/shipper-orders/:status" element={<PrivateRoute><ShipperOrderList /></PrivateRoute>} />
             </Routes>
         </Router>
     );

@@ -1,40 +1,53 @@
-// src/pages/PayPalSuccess.jsx
-import { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { executePayment } from '../services/PaymentService';
-import { Box, Typography, CircularProgress, Alert } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { executePayment } from "../services/PaymentService";
+import { CircularProgress, Typography, Container, Box } from "@mui/material";
 
 const PayPalSuccess = () => {
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-    const paymentId = searchParams.get('paymentId');
-    const payerId = searchParams.get('PayerID');
+    const location = useLocation();
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const handleSuccess = async () => {
-            try {
-                const response = await executePayment(paymentId, payerId);
-                if (response.status === 'success') {
-                    alert('✅ Thanh toán thành công!');
-                    // 👉 Bạn có thể gọi API lưu hóa đơn tại đây nếu muốn
-                    navigate('/payment-success');
-                } else {
-                    alert('⚠️ Xác nhận thất bại.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('❌ Đã xảy ra lỗi khi xác nhận.');
-                navigate('/');
-            }
-        };
-        handleSuccess();
-    }, []);
+        const query = new URLSearchParams(location.search);
+        const paymentId = query.get("paymentId");
+        const payerId = query.get("PayerID");
+        const orderId = query.get("orderId");
+
+        if (paymentId && payerId) {
+            executePayment(paymentId, payerId, orderId)
+                .then((response) => {
+                    if (response.status === "success") {
+                        setMessage(response.message || "✅ Thanh toán thành công!");
+                    } else {
+                        setError(response.message || "⚠️ Xác nhận thanh toán thất bại.");
+                    }
+                })
+                .catch(() => {
+                    setError("❌ Đã xảy ra lỗi khi xác nhận thanh toán.");
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        } else {
+            setError("❌ Thiếu thông tin xác nhận thanh toán.");
+            setLoading(false);
+        }
+    }, [location]);
 
     return (
-        <Box sx={{ p: 5, textAlign: 'center' }}>
-            <CircularProgress />
-            <Typography mt={2}>Đang xác nhận thanh toán...</Typography>
-        </Box>
+        <Container maxWidth="sm">
+            <Box textAlign="center" mt={10}>
+                {loading ? (
+                    <CircularProgress />
+                ) : error ? (
+                    <Typography variant="h6" color="error">{error}</Typography>
+                ) : (
+                    <Typography variant="h6" color="primary">{message}</Typography>
+                )}
+            </Box>
+        </Container>
     );
 };
 

@@ -8,11 +8,11 @@ import { AuthProvider } from './context/AuthContext'; // ✅ THÊM dòng này
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <React.StrictMode>
+
         <AuthProvider> {/* ✅ Bọc App tại đây */}
             <App />
         </AuthProvider>
-    </React.StrictMode>
+
 );
 
 reportWebVitals();
