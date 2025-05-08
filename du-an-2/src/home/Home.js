@@ -7,6 +7,8 @@ import ServiceCard from '../components/ServiceCard';
 import Footer from '../home/Footer';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ChatWidget from '../home/ChatWidget';
+
 
 const services = [
     { title: 'Nhân viên giặt ủi 247 giàu kinh nghiệm', desc: 'Quần áo và trang phục của bạn sẽ được Giặt ủi bởi những nhân viên giàu kinh nghiệm đã gắn bó lâu năm với 247, tỉ mỉ tận tâm và có trách nhiệm cao trong từng nghiệp vụ giặt ủi chăm sóc quần áo của khách hàng.', image: 'https://giatui247.vn/web/image/2932-94339f4f/Screen%20Shot%202023-07-02%20at%2017.34.45.png' },
@@ -201,7 +203,7 @@ const HomePage = () => {
                     Đặt lịch ngay
                 </Button>
             </Box>
-
+            <ChatWidget />
             <Footer />
         </>
     );
